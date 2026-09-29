@@ -1,0 +1,8 @@
+{
+  "allowed_actions": {
+    "ops_agent": [
+      "pay_invoice",
+      "send_email"
+    ]
+  }
+}

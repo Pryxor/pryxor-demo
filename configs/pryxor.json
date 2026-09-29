@@ -1,0 +1,31 @@
+{
+  "sector": "ops_finance",
+  "hold_ttl_minutes": 60,
+  "secrets": { "provider": "env" },
+  "rate_limit": {
+    "enabled": false,
+    "requests_per_minute": 60,
+    "burst": 10
+  },
+  "redaction": {
+    "enabled": true,
+    "default_mode": "REDACTED",
+    "default_patterns": [
+      "password",
+      "api_key",
+      "bearer",
+      "card_number",
+      "iban",
+      "aws_key",
+      "jwt",
+      "private_key"
+    ],
+    "tools": {
+      "send_email": {
+        "fields": {
+          "body": "HASH"
+        }
+      }
+    }
+  }
+}

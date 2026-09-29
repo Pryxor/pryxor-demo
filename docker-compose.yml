@@ -1,0 +1,78 @@
+# Pryxor demo — the "real systems" (fake money, real protocol).
+#
+# Base stack: mock bank + mail bridge + SMTP sink.
+# Overlay with Pryxor:  docker compose -f docker-compose.yml \
+#                                     -f docker-compose.with-pryxor.yml up -d --build
+#
+# All ports bind to 127.0.0.1 only. Nothing is exposed on the LAN.
+
+services:
+  bank:
+    build: ./mock_services
+    container_name: demo-bank
+    command: uvicorn bank_api:app --host 0.0.0.0 --port 8001
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      BANK_DATA: /data/bank.json
+    volumes:
+      - bank_data:/data
+    networks:
+      - demo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  mail:
+    build: ./mock_services
+    container_name: demo-mail
+    command: uvicorn mail_api:app --host 0.0.0.0 --port 8025
+    ports:
+      - "127.0.0.1:8025:8025"
+    environment:
+      SMTP_HOST: smtp
+      SMTP_PORT: "1025"
+      MAIL_FROM: ops@company.local
+    depends_on:
+      - smtp
+    networks:
+      - demo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8025/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  smtp:
+    build: ./mock_services
+    container_name: demo-smtp
+    command: python smtp_sink.py
+    ports:
+      - "127.0.0.1:1025:1025"
+    environment:
+      MAILDIR: /mail
+    volumes:
+      - ./mail:/mail
+    networks:
+      - demo
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket;socket.create_connection(('127.0.0.1',1025),2).close()"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+networks:
+  demo:
+    name: pryxor-demo
+    driver: bridge
+
+volumes:
+  bank_data:

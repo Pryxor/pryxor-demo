@@ -1,0 +1,26 @@
+{
+  "type": "http",
+  "method": "POST",
+  "url": "http://bank:8001/payments",
+  "sector": "ops_finance",
+  "description": "Send a payment to a vendor through the mock bank.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "recipient": { "type": "string" },
+      "amount": { "type": "number", "exclusiveMinimum": 0 },
+      "reference": { "type": "string", "maxLength": 140 }
+    },
+    "required": ["recipient", "amount"],
+    "additionalProperties": false
+  },
+  "auth": {
+    "type": "bearer",
+    "secret_ref": "BANK_API_TOKEN"
+  },
+  "body": {
+    "recipient": "{{ parameters.recipient }}",
+    "amount": "{{ parameters.amount }}",
+    "reference": "{{ parameters.reference }}"
+  }
+}

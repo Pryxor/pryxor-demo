@@ -1,0 +1,49 @@
+# Pryxor demo — overlay that adds the Pryxor runtime in front of the mocks.
+#
+# Requires a sibling checkout of the Pryxor runtime:
+#     git clone https://github.com/Pryxor/pryxor.git ../pryxor
+#
+# Then:
+#     docker compose -f docker-compose.yml -f docker-compose.with-pryxor.yml up -d --build
+#
+# The Pryxor service joins the same `demo` network as bank/mail/smtp, so
+# the executors in configs/executors/*.json can reach:
+#     http://bank:8001
+#     http://mail:8025
+#
+# The Pryxor port 8000 is bound to 127.0.0.1 only.
+
+services:
+  pryxor:
+    build:
+      context: ${PRYXOR_REPO_PATH:-../pryxor}
+      dockerfile: Dockerfile
+    image: pryxor:demo
+    container_name: demo-pryxor
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      PRYXOR_STATE_PATH: /data/pryxor_state.sqlite3
+      PRYXOR_CONFIG_DIR: /configs
+      PRYXOR_LOG_LEVEL: INFO
+      # The demo does not need the background notification worker.
+      PRYXOR_DISPATCH_WORKER: "0"
+      BANK_API_TOKEN: ${BANK_API_TOKEN:-sk_test_bank_a1b2c3d4e5f6g7}
+    volumes:
+      - ./configs:/configs:ro
+      - pryxor_data:/data
+    networks:
+      - demo
+    depends_on:
+      - bank
+      - mail
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/v1/health', timeout=3).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  pryxor_data:

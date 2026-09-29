@@ -1,0 +1,32 @@
+{
+  "type": "declarative",
+  "rules": [
+    {
+      "name": "block-non-positive-amounts",
+      "when": { "tool": "pay_invoice", "amount_lte": 0 },
+      "then": {
+        "block": "INVALID_AMOUNT",
+        "message": "Amount must be strictly positive."
+      }
+    },
+    {
+      "name": "hold-above-auto-limit",
+      "when": { "tool": "pay_invoice", "amount_gt": 1000 },
+      "then": {
+        "hold": "ABOVE_AUTO_LIMIT",
+        "message": "Above the automatic limit; needs a human."
+      }
+    },
+    {
+      "name": "hold-unlisted-vendors",
+      "when": {
+        "tool": "pay_invoice",
+        "recipient_not_in": ["Fournisseur_A", "Fournisseur_B", "Acme_Corp"]
+      },
+      "then": {
+        "hold": "VENDOR_NOT_ALLOWLISTED",
+        "message": "Vendor is not on the allowlist."
+      }
+    }
+  ]
+}

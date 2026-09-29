@@ -1,0 +1,46 @@
+{
+  "type": "declarative",
+  "rules": [
+    {
+      "name": "block-credential-exfil",
+      "when": {
+        "tool": "send_email",
+        "body_matches": "(?i)(BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{20,})"
+      },
+      "then": {
+        "block": "SENSITIVE_CREDENTIAL_EXFIL",
+        "message": "Attempt to send credential material."
+      }
+    },
+    {
+      "name": "block-sensitive-subjects",
+      "when": {
+        "tool": "send_email",
+        "subject_matches": "(?i)(password|secret|credential|api[_ -]?key)"
+      },
+      "then": {
+        "block": "SENSITIVE_SUBJECT",
+        "message": "Subject contains a sensitive keyword."
+      }
+    },
+    {
+      "name": "allow-internal-emails",
+      "when": {
+        "tool": "send_email",
+        "to_domain_in": ["company.local"]
+      },
+      "then": {
+        "approve": true,
+        "message": "Internal recipient — approved."
+      }
+    },
+    {
+      "name": "hold-external-emails",
+      "when": { "tool": "send_email" },
+      "then": {
+        "hold": "EXTERNAL_EMAIL",
+        "message": "External recipient needs human review."
+      }
+    }
+  ]
+}

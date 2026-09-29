@@ -1,0 +1,22 @@
+{
+  "type": "http",
+  "method": "POST",
+  "url": "http://mail:8025/send",
+  "sector": "ops_email",
+  "description": "Send an email through the demo mail bridge.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "to": { "type": "string" },
+      "subject": { "type": "string", "maxLength": 200 },
+      "body": { "type": "string", "maxLength": 10000 }
+    },
+    "required": ["to", "subject", "body"],
+    "additionalProperties": false
+  },
+  "body": {
+    "to": "{{ parameters.to }}",
+    "subject": "{{ parameters.subject }}",
+    "body": "{{ parameters.body }}"
+  }
+}
