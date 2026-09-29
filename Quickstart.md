@@ -28,6 +28,7 @@ Register the demo agent:
 docker compose -f docker-compose.yml -f docker-compose.with-pryxor.yml \
   exec pryxor python admin_cli.py register ops_agent
 ```
+>On windows, run : `docker compose -f docker-compose.yml -f docker-compose.with-pryxor.yml exec pryxor python admin_cli.py register ops_agent`
 
 Copy the printed key into your environment:
 
